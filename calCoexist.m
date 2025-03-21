@@ -8,49 +8,8 @@ function [k_i, p_i, U_i, wa_sigma, sigma_ci, Q_i, Q_ci, Gamma, S_i, sVisits_perP
 % fitness diferrences.
 % Mutual Invasibility criterion: rho < k_i/k_k < 1/rho ; ensures
 % coexistence.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Last Modification 07/014/2024, Davis
-% Removed effective degree.
 
-%% Last Modification 07/06/2024, Davis
-% Added effective degree, weigthed average sigma, and an improve calculation
-% of sigma_c that includes inter-specific competition for recruitment among
-% plant species.
-
-%% Last modification 3/27/2024 in Davis, CA
-% Added calculations that determine whether a plant population has a
-% negative population growth which starts the non-reversible process to
-% extinction (at least in networks with AF), which are:
-% Per-capita mortality rate of a plant species over the fraction of its
-% seeds produced that become adults (mort_recruit, below).
-% Per-capita seed production must be equal or higher than that quantity for
-% the plant population to keep or increase its density.
-% => this was not very useful...
-
-%% Last modification 3/26/2024 in Davis, CA
-% Added calculations from Valdovinos & Marsland 2020. Specifically those
-% that determine when a plant species go extinct:
-% sij: # of seedlings produced per plant lifetime under optiomal conditions
-% -> no other plant species nearby to contaminate the pollen and the field
-% is clear of all competing plants.
-% di: Fraction of total rewards lost to dilution when plants are at
-% carrying capacity 1/wi.
-% sigma_c: critical value of quality of visits under which a plant goes
-% extinct under ideal conditions, which value is approximately 4/sij.
-
-%% Last modification 5/29/2023 in Davis, CA
-% Modified from calValMechs.m to calculate all the components of the
-% partial derivatives indicating the direct effect of plant species k on
-% plant species i, as well as the effect of plant species i on itself. Then
-% those derivatives are used to identify the intra- and inter-specific
-% direct effects caused by the plant species on each other and itsels via
-% recruitment or via pollination. Finally, this function calculates niche
-% differentation (rho, sensu Chesson 1989), niche overlap (1-rho), and
-% fitness diferrences.
-
-%% Calling all parameters stored in structure network_metadata 
-% To run bits of this code after running RunValdovinos2013_singleM_Coexist.m 
-% use: Alpha=alphasf; p=plantsf; a=animalsf;
+%% Calling all parameters stored in structure network_metadata
 
 plant_qty  = metadata.plant_qty ;
 e       = full(metadata.e) ;
