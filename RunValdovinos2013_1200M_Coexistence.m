@@ -1,4 +1,6 @@
-%
+% Main code for simulations by Valdovinos et al 2025 on plant species coexistence
+% It runs the Valdovinos et al's 2013 model for 1200 algorithm-generated
+% networks, without (frG=0) and with (frG=1) adaptive foraging; by calling  
 tic
 
 dataset=1200;
@@ -69,8 +71,6 @@ for i=1:dataset
         metadata = create_metadata(vectG,In,muAP,i);
 
         [plantsf, nectarf, animalsf, alphasf]=IntegrateValdovinos2013_dataset(metadata);
-
-       % Alpha=alphasf;p=plantsf;a=animalsf;
         
         [k_i, p_i, U_i, wa_sigma, sigma_ci, Q_i, Q_ci, Gamma, S_i, sVisits_perP_i, persistedP_i, criterion_check_i, D_j, wd_i]= calCoexist(alphasf,plantsf,animalsf,metadata);
         

@@ -10,29 +10,24 @@
 % New version. Avoids 0/0 cases to simplify simulations where species 
 % are removed or added in the middle of the run
 
-function dx = Valdovinos2013_rhs(t,x)
+function dx = Valdovinos2013_rhs(~,x, metadata)
 
-global network_metadata %indRemP indRemA
+nz_pos  = metadata.nz_pos ;
+e       = metadata.e ;
+mu_p    = metadata.mu_p ;
+mu_a    = metadata.mu_a ;
+c       = metadata.c ;
+b       = metadata.b ;
+u       = metadata.u ;
+w       = metadata.w ;
+Beta    = metadata.Beta ;
+G       = metadata.G ;
+g       = metadata.g ;
+phi     = metadata.phi ;
+tau     = metadata.tau ;
+epsilon = metadata.epsilon ;
 
-plant_qty  = network_metadata.plant_qty ;
-animal_qty = network_metadata.animal_qty ;
-nz_pos  = network_metadata.nz_pos ;
-e       = network_metadata.e ;
-mu_p    = network_metadata.mu_p ;
-mu_a    = network_metadata.mu_a ;
-c       = network_metadata.c ;
-b       = network_metadata.b ;
-u       = network_metadata.u ;
-w       = network_metadata.w ;
-Beta    = network_metadata.Beta ;
-G       = network_metadata.G ;
-g       = network_metadata.g ;
-phi     = network_metadata.phi ;
-tau     = network_metadata.tau ;
-epsilon = network_metadata.epsilon ;
-In      = network_metadata.In ;
-
-[p, N, a, Alpha] = unpack(x, network_metadata ) ;
+[p, N, a, Alpha] = unpack(x, metadata) ;
 %p(indRemP)=0;% We force extinct species to zero to avoid resucitation due to stiff integrator
 %N(indRemP)=0;
 %a(indRemA)=0;
