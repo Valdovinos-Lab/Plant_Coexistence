@@ -1,8 +1,6 @@
-function [k_i, D_i, w_degree, degree, sigma_ci, wa_sigma, p_i, Gamma, S_i, mort_recruit, PollenDep_i, sVisits_perP_i, persistedP_i,...
-    S_ik, Omega_ik, rho_ik, fitness_diff_ik, Mutual_Inv, criterion_check_i]= calCoexist(Alpha,p,a,network_metadata)
+function [k_i, p_i, U_i, wa_sigma, sigma_ci, Q_i, Q_ci, Gamma, S_i, sVisits_perP_i, persistedP_i, criterion_check_i, D_j, wd_i]= calCoexist(Alpha,p,a,metadata)
 
 % Called by RunValdovinos2013_1200M.m 
-% (i.e., no need to re-run simulations)
 % Calculates the partial derivatives (direct effect) of plant species k on
 % plant species i, as well as the effect of plant species i on itself.
 % Finally, this function calculates niche
@@ -11,6 +9,9 @@ function [k_i, D_i, w_degree, degree, sigma_ci, wa_sigma, p_i, Gamma, S_i, mort_
 % Mutual Invasibility criterion: rho < k_i/k_k < 1/rho ; ensures
 % coexistence.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Last Modification 07/014/2024, Davis
+% Removed effective degree.
+
 %% Last Modification 07/06/2024, Davis
 % Added effective degree, weigthed average sigma, and an improve calculation
 % of sigma_c that includes inter-specific competition for recruitment among
@@ -51,55 +52,33 @@ function [k_i, D_i, w_degree, degree, sigma_ci, wa_sigma, p_i, Gamma, S_i, mort_
 % To run bits of this code after running RunValdovinos2013_singleM_Coexist.m 
 % use: Alpha=alphasf; p=plantsf; a=animalsf;
 
-In      = network_metadata.In ;
+plant_qty  = metadata.plant_qty ;
+e       = full(metadata.e) ;
+mu_p    = metadata.mu_p ;
 
-plant_qty  = network_metadata.plant_qty ;
-animal_qty = network_metadata.animal_qty ;
+u       = metadata.u ;
+w       = metadata.w ;
 
-e       = full(network_metadata.e) ;
-mu_p    = network_metadata.mu_p ;
-mu_a    = network_metadata.mu_a ;
-c       = network_metadata.c ;
-tau     = network_metadata.tau ;
+g       = metadata.g ;
+tau     = metadata.tau ;
 
-u       = network_metadata.u ;
-w       = network_metadata.w ;
-
-g       = network_metadata.g ;
-tau     = network_metadata.tau ;
-
-phi     = network_metadata.phi ;
-Beta    = network_metadata.Beta ;
-b       = network_metadata.b ;
-
-epsilon = network_metadata.epsilon ; % This parameter has value 1, but when there is added variance to it (varp>0),
+epsilon = metadata.epsilon ; % This parameter has value 1, but when there is added variance to it (varp>0),
                                      % some plant species get below 1 others above 1, and it then affects
                                      % a bit the dynamics and the calculated metrics. I'm keeping because 
                                      % the equations have it so I can trakc the effects when its varp > 0
 
-%% Calculating demographic potential, potential degree, weighted-average and critical sigma and predicted plant abundances at equilibrium
+%% Demographic potential, weighted-average and critical sigma, and predicted plant abundances at equilibrium
 
 k_i = g .* sum(e .* Alpha * diag(a .* tau.^2),2) - mu_p; % Fitness of each plant species assuming 
-                                                         % no other species are around (including itself).
-[D_i, w_degree, degree]=effective_degree(Alpha);
+                                                         % no effect of any type of competition .
+                                                         
+% Effective degree of pollinators and weigthed degree of plants
+[D_j, wd_i]=effective_degree(Alpha);
 
-mb=full(max(max(b)));% These simulations have the same value for all b as the variance among
-mc=full(max(max(c)));% animal parameters is equal to zero. This must change
-mtau=max(tau);       % if the variance is higher than zero.
-mmu_a=max(mu_a);
-                       
-Rstar=mmu_a/(mc*mtau*mb); % Rstar=0.0125;
-
-K_l=(1 - u'*p + u.*p) ;% Total interspecific competition.
+U_i=(1 - u'*p + u.*p) ;% Total interspecific competition.
                        % The added u.*p is substracting the corresponding
                        % u to self (i,i) since it's inter-specific competition
-                       
-d_i=phi*Rstar.*w./Beta;
-
-seedlings_i=g.*e.*Beta.*(K_l-d_i)./(w*mb.*mu_p*Rstar);
-
-sigma_ci=4./(seedlings_i.*(K_l-d_i));
-                       
+                                             
 Visits = diag(p)* Alpha * diag(a.*tau);
 Visits_perP = Alpha * diag(a .*tau) ; % Per-plant (per-capita) visits of pollinator sp j
                                       % assigned to each plant sp i. It's a
@@ -113,14 +92,16 @@ sigma = sigma * diag(1./(sum(sigma)+realmin)) ; % Quality of visits. Matrix (i,j
 
 wa_sigma = sum(sigma.*Alpha.*Visits,2)./sum(Alpha.*Visits,2);
 
-p_i=1./w .* ( K_l - 0.5 .* (K_l - d_i) .* ( 1 - sqrt( 1 - sigma_ci./wa_sigma ) ));
+p_i=(U_i)./w - mu_p./(g.*w.*e.*wa_sigma.*sVisits_perP_i);
 
-%% Starting calucluations for niche overlap sensu Chesson
+sigma_ci=mu_p./(g.*e.*sVisits_perP_i.*U_i);
+
+Q_i=wa_sigma.*sVisits_perP_i;
+Q_ci = mu_p./(g.*e.*U_i);
+
+%% Starting calculations for niche overlap sensu Chesson
 
 S_i = sum(e .* sigma .* Visits_perP, 2); % Per-capita total production of seeds i
-                                 
-PollenDep_i = sum(sigma .* Visits_perP, 2); % Per-capita total pollination rate
-                                 % to compare with Wei et al 2020.
 
 Gamma = g .* (1 - u'*p - w.*p + u.*p) ;% Fraction of seeds that recruit to adult plants.
                                        % The added u.*p is substracting the corresponding
@@ -131,10 +112,6 @@ s_ij = e .* Visits_perP ; % per-plant production of seeds resulting from visits 
                           % assuming that the pollinator is a specialist on i
                           % without sigma because sigma is accounted later
                           % in the calculations of Aii_2ndTerm as F_ij.
-                         
-mort_recruit = mu_p./Gamma; % Per-capita mortality rate of a plant species over the 
-                            % fraction of its seeds produced that become adults.
-
 
 Visits_j = sum(Visits) ; % Total visits performed by pollinator sp j
 
@@ -148,7 +125,7 @@ Aii_1stTerm = - w.* g.* S_i ; % Direct effect of plant species i on itself via
 Aii_2ndTerm = (Gamma./ p) .* sum(s_ij.* F_ij.*(1-F_ij), 2) ; % Direct effect of 
                                 % plant species i on itself via pollination
 
-Aii = Aii_1stTerm + Aii_2ndTerm ; % Total direct effect of plant species i on itself via 
+%Aii = Aii_1stTerm + Aii_2ndTerm ; % Total direct effect of plant species i on itself via 
                       % both seed recruitment and pollination.
                       
 %% Allocating zero matrices for calculating inter-specific direct effects
@@ -181,7 +158,7 @@ for k=1:plant_qty  % the effecter in columns
     end
 end
         
-Aik = Aik_1stTerm + Aik_2ndTerm;
+%Aik = Aik_1stTerm + Aik_2ndTerm;
 
 %rho_num_ik = zeros(plant_qty,plant_qty);
 %rho_den_ik = zeros(plant_qty,plant_qty);
@@ -220,15 +197,16 @@ Mutual_Inv=double(Mutual_Inv); % converting logical to double
 
 % Adding NaN to the diagonal of all matrices
 Mutual_Inv(eye(size(Mutual_Inv))==1) = nan ; % Making the diagonal (invasibility of i on i) NAN
-fitness_diff_ik(eye(size(fitness_diff_ik))==1) = nan ; % Making the diagonal (difference between i and i) NAN
-S_ik(eye(size(S_ik))==1) = nan ; % Making the diagonal (effect of i on i) NAN
-Omega_ik(eye(size(Omega_ik))==1) = nan ; % Making the diagonal (overlap between i and i) NAN
-rho_ik(eye(size(rho_ik))==1) = nan ; % Making the diagonal (overlap between i and i) NAN
+%fitness_diff_ik(eye(size(fitness_diff_ik))==1) = nan ; % Making the diagonal (difference between i and i) NAN
+%S_ik(eye(size(S_ik))==1) = nan ; % Making the diagonal (effect of i on i) NAN
+%Omega_ik(eye(size(Omega_ik))==1) = nan ; % Making the diagonal (overlap between i and i) NAN
+%rho_ik(eye(size(rho_ik))==1) = nan ; % Making the diagonal (overlap between i and i) NAN
 
 % Checking if Chesson's criterion worked
 persistedP_i=double(p > 0);
-nMutInvaded_i=nansum(Mutual_Inv)';
+nMutInvaded_i = sum(Mutual_Inv, 'omitnan')';
 nPersisted=sum(persistedP_i);
 criterion_check_i=double((nPersisted*persistedP_i)==(nMutInvaded_i+persistedP_i));
+
 
 end
