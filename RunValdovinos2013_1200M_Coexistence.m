@@ -152,7 +152,7 @@ for i=1:dataset
 
 end
 
-%CoexistRes_mean=[Network_properties(1,:) CoexistRes_mean_dataset];
+%CoexistRes_mean=[Network_properties(i,:) CoexistRes_mean_dataset];
 CoexistRes_mean=[Network_properties CoexistRes_mean_dataset];
 
 CoexistSummary_AllSp_dataset2=[NetProp_Allsp_i_dataset CoexistSummary_AllSp_dataset];
@@ -204,6 +204,6 @@ T_CoexistRes_parsP= array2table(parsP_01,'VariableNames',{'mu_p0','g0','w0','e0'
 writetable(T_CoexistRes_parsP,sprintf('Coex_parsP_muAP%d_%dm.txt',muAP,dataset),'Delimiter',' ')
 
 %% Save array with final alpha matrices
-save(sprintf('Alphas%dm.mat',dataset), 'Alphas');
+%save(sprintf('Alphas%dm.mat',dataset), 'Alphas');
 
 toc

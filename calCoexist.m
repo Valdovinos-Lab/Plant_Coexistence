@@ -97,11 +97,16 @@ S_ik = zeros(plant_qty, plant_qty);
 Omegaj_ik = cell(plant_qty,plant_qty);
 Omega_ik = zeros(plant_qty,plant_qty);
 
+k_i2=k_i;
+k_i2(k_i<0)=0; % Making negative fitness values zero to avoid erroneous negative large numbers
+                        % in fitness differences when comparing fitnesses
+                        % between persisting and extinct species
+
 for k=1:plant_qty  % the effecter in columns
     
     for i=1:plant_qty % the receiver of the effect in the rows
         
-        fitness_diff_ik(i,k) = k_i(k)/k_i(i); % fitness differences between the effecter and the receiver. Effecter is the focal species
+        fitness_diff_ik(i,k) = k_i2(k)/k_i2(i); % fitness differences between the effecter and the receiver. Effecter is the focal species
                                               
         Aik_1stTerm(i,k) = - g(i)* u(k)* S_i(i); % all three terms are vectors with as many elements
                                            % as plants from which only one plant is taken
@@ -162,7 +167,7 @@ Mutual_Inv(eye(size(Mutual_Inv))==1) = nan ; % Making the diagonal (invasibility
 %rho_ik(eye(size(rho_ik))==1) = nan ; % Making the diagonal (overlap between i and i) NAN
 
 % Checking if Chesson's criterion worked
-persistedP_i=double(p > 0);
+persistedP_i=double(p > 0.001);% Plants below this value are considered extinct
 nMutInvaded_i = sum(Mutual_Inv, 'omitnan')';
 nPersisted=sum(persistedP_i);
 criterion_check_i=double((nPersisted*persistedP_i)==(nMutInvaded_i+persistedP_i));
