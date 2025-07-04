@@ -4,7 +4,7 @@
 
 function Jz=J_zero_pattern(In)
 
-[m n]=size(In);
+[m, n]=size(In);
 nz_pos=find(In); %indices in linear space
 alpha_qty=length(nz_pos);
 
@@ -15,7 +15,7 @@ p_alpha=sparse(m,alpha_qty);
 
 % Integer division trick
 % nz_div(k)==i iff nz_pos(k) corresponds to an alpha of animal k
-nz_idiv=idivide(uint32(nz_pos)-1,uint32(m))+1;
+nz_idiv=floor((nz_pos-1)/m)+1;
 
 for j=1:n
     alpha_indx_aj=sparse(find(nz_idiv==j));

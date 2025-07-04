@@ -1,10 +1,14 @@
-% RUns Valdovinos et al's (2013) model for each network at the time, with parameters stored
-% in structure 'matadata'. The equations of the model are stored in function
-% Valdovinos2013_rhs.m, which are integrated using ode15s
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Last Modification 08/03/2019, Ann Arbor
+% Cleaning up my codes
+% Only run the dynamics, without species invasions or removals
+% Runs the dynamics for only one matrix.
+% Outputs the whole time-series for any variable as well as final values
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [plantsf, Rf, animalsf, alphasf]=IntegrateValdovinos2013_dataset(metadata)
 
-tmax=20000;
+tmax=2000000;
 %EUp=2e-2;
 %EUa=1e-3;
 

@@ -1,4 +1,14 @@
-% Equations of the Valdovinos et al's (2013) model
+% Code created for simulating invasion of pollinator species into
+% plant-pollinator networks, using Valdovinos et al. 2013, 2016 model
+% Authors: Fernanda S. Valdovinos & Pablo Moisset de Espanes
+% Last Modification: May 5, 2018
+% Published: Nature Communications 2018 (see paper for more in detail
+% explanation of parameters, variables, and simulation design)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Valdovinos et al. 2013 ODE's RHS. 
+% New version. Avoids 0/0 cases to simplify simulations where species 
+% are removed or added in the middle of the run
 
 function dx = Valdovinos2013_rhs(~,x, metadata)
 
