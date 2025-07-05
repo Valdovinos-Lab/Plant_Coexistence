@@ -24,7 +24,7 @@ CoexistRes_mean_dataset = [];
 NetProp_Allsp_i_dataset = [];
 
 % Main loop over all networks
-for i = 1%:dataset
+for i = 1:dataset
     In = cell2mat(m1200(i));
     [plant_qty, animal_qty] = size(In);
     
@@ -107,5 +107,5 @@ T_CoexistSummary_AllSp_dataset = array2table(CoexistSummary_AllSp_dataset2,'Vari
     'PersYoN0','PersYoN1','criterion_check0','criterion_check1'});
 
 % Save results
-writetable(T_CoexistRes_mean,sprintf('Coex_mean_muAP%d_%dm.csv',muAP,dataset),'Delimiter',' ')
-writetable(T_CoexistSummary_AllSp_dataset,sprintf('Coex_AllPsp_muAP%d_%dm.csv',muAP,dataset),'Delimiter',' ')
+writetable(T_CoexistRes_mean,sprintf('Coex_mean_muAP%d_%dm.csv',muAP,dataset))
+writetable(T_CoexistSummary_AllSp_dataset,sprintf('Coex_AllPsp_muAP%d_%dm.csv',muAP,dataset))
