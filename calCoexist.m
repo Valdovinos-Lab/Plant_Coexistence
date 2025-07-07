@@ -41,7 +41,6 @@ wa_sigma = sum(sigma.*Alpha.*Visits,2)./sum(Alpha.*Visits,2);
 
 % Predicted abundances
 pred_p_i = (U_i)./w - mu_p./(g.*w.*e.*wa_sigma.*sVisits_perP_i);
-Q_i = wa_sigma.*sVisits_perP_i;  % Pollination events
 
 % Seed production and recruitment
 S_i = sum(e .* sigma .* Visits_perP, 2);
@@ -58,10 +57,13 @@ Aik_2ndTerm = zeros(plant_qty, plant_qty);
 rho_ik = zeros(plant_qty, plant_qty);
 
 % Calculate inter-specific effects
-for k = 1:plant_qty
-    for i = 1:plant_qty
+for i = 1:plant_qty
+    for k = (i+1):plant_qty  % Only calculate upper triangle
         Aik_1stTerm(i,k) = -g(i) * u(k) * S_i(i);
+        Aik_1stTerm(k,i) = -g(k) * u(i) * S_i(k);  % Calculate both directions
+        
         Aik_2ndTerm(i,k) = -Gamma(i)/p(k) * sum(e(i,:) .* Visits_perP(i,:) .* sigma(i,:) .* sigma(k,:));
+        Aik_2ndTerm(k,i) = -Gamma(k)/p(i) * sum(e(k,:) .* Visits_perP(k,:) .* sigma(k,:) .* sigma(i,:));
         
         % Calculate rho components
         rho_num = Aik_1stTerm(i,k) * Aik_1stTerm(k,i) + ...
@@ -74,9 +76,13 @@ for k = 1:plant_qty
                   Aii_1stTerm(k) * Aii_2ndTerm(i) + ...
                   Aii_2ndTerm(k) * Aii_2ndTerm(i);
         
-        rho_ik(i,k) = sqrt(rho_num/rho_den);
+        % Calculate and assign to both positions to make matrix symmetric
+        rho_value = sqrt(rho_num/rho_den);
+        rho_ik(i,k) = rho_value;
+        rho_ik(k,i) = rho_value;  % Mirror the value
     end
 end
+
 
 % Set diagonal elements to NaN
 rho_ik(eye(size(rho_ik))==1) = nan;

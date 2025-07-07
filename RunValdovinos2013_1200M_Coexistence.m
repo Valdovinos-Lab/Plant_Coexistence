@@ -63,7 +63,7 @@ for i = 1:dataset
         % That is, the niche overlap between plant species i and k is the same as
         % that of plant species k and i.
         upper_triangle = triu(rho_ik, 1); % Get upper triangle (1 means exclude diagonal)
-        rho_mean01(1,frG+1) = mean(upper_triangle(upper_triangle ~= 0)); % Mean of non-zero elements
+        rho_mean01(1,frG+1) = mean(upper_triangle(upper_triangle ~= 0), 'omitnan'); % Mean of non-zero elements
         
         % Store results
         k_i01(:,frG+1) = k_i;
